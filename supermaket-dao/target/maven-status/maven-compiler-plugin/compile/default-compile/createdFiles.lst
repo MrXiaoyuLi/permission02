@@ -1,0 +1,5 @@
+org\supermarket\dao\RoleDao.class
+org\supermarket\dao\UserDao.class
+org\supermarket\dao\CommonDao.class
+org\supermarket\pojo\User.class
+org\supermarket\pojo\Role.class

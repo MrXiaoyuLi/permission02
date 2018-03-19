@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.supermarket.dao.RoleDao">
+	<resultMap type="org.supermarket.pojo.Role" id="roleMap" autoMapping="true">
+		<id column="id" property="id"/>
+		<!-- 配置一对多关联关系映射 -->
+		<collection property="users" javaType="java.util.List" ofType="org.supermarket.pojo.User" column="id" select="getUsersByRoleId"></collection>
+	</resultMap>
+	<select id="getUsersByRoleId" parameterType="long" resultType="org.supermarket.pojo.User">
+		select * from smbms_user where role_id = #{id}
+	</select>
+	<select id="getById" parameterType="long" resultMap="roleMap">
+		select * from smbms_role where id = #{id}
+	</select>
+	
+	<select id="getAll" resultType="org.supermarket.pojo.Role">
+		select * from smbms_role
+	</select>
+	
+	<insert id="add" parameterType="org.supermarket.pojo.Role"
+		 useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into smbms_role(roleCode,roleName)
+			values(#{roleCode},#{roleName})
+	</insert>
+	<update id="update" parameterType="org.supermarket.pojo.Role">
+		update smbms_role set roleCode=#{roleCode},roleName=#{roleName}
+			where id = #{id}
+	</update>
+	<delete id="deleteById" parameterType="long">
+		delete from smbms_role where id = #{id}
+	</delete>
+	
+</mapper>
+
+
+
+
+
+
+

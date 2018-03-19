@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.supermarket.dao.UserDao">
+	<!-- 第一种：单独发送一条查询语句去查询关联对象 -->
+	<resultMap type="org.supermarket.pojo.User" id="userMap2" autoMapping="true">
+		<id column="id" property="id"/>
+		<association property="role" javaType="org.supermarket.pojo.Role" column="role_id" select="org.supermarket.dao.RoleDao.getById"></association>
+	</resultMap>
+	<select id="getById2" parameterType="int" resultMap="userMap2">
+		select * from smbms_user where id = #{id}
+	</select>
+	
+	<!-- 第二种：发送连表查询语句 -->
+	<resultMap type="org.supermarket.pojo.User" id="userMap" autoMapping="true">
+		<id column="id" property="id"/>
+		<association property="role" javaType="org.supermarket.pojo.Role" autoMapping="true">
+			<id column="rid" property="id"/>
+		</association>
+	</resultMap>
+	<select id="getById" parameterType="int" resultMap="userMap">
+		select *,r.id as rid from smbms_user u
+		  LEFT JOIN smbms_role r ON u.role_id = r.id
+		  where u.id = #{id}
+	</select>
+	
+	<select id="getCount" resultType="int">
+		select count(1) from smbms_user
+	</select>
+	<select id="getList" resultType="org.supermarket.pojo.User">
+		select * from smbms_user limit #{start},#{pageSize}
+	</select>
+	
+	
+	<insert id="add" parameterType="org.supermarket.pojo.User" useGeneratedKeys="true" keyColumn="id" keyProperty="id">
+		insert into smbms_user(userCode,username,userPassword,gender)
+			values(#{userCode},#{userName},#{userPassword},#{gender})
+	</insert>
+	
+	<sql id="conditionSql">
+		<!-- 构建查询条件 -->
+		<if test="condition != null">
+			<trim prefix="where" prefixOverrides="and | or">
+				<!-- 是否传递了用户名条件 -->
+				<if test="condition.userCode != null and condition.userCode != ''">
+					and userCode like concat('%',#{condition.userCode},'%')
+				</if>
+				<if test="condition.userName != null and condition.userName != ''">
+					and userName like concat('%',#{condition.userName},'%')
+				</if>
+				<if test="condition.role != null and condition.role.id != null and condition.role.id != -1">
+					and role_id = #{condition.role.id}
+				</if>
+			</trim>
+		</if>
+	</sql>
+	
+	<select id="getByCondition" resultMap="userMap2">
+		select * from smbms_user 
+			<include refid="conditionSql"></include>
+			<!-- 添加排序:如果没有传递，默认按照主键降序排，否则按照传递的排列 -->
+			<choose>
+				<when test="columnName == null">order by id desc</when>
+				<otherwise>order by ${columnName} ${orderBy}</otherwise>
+			</choose>
+			limit #{start},#{pageSize}
+	</select>
+	
+	<select id="getCountByCondition" parameterType="org.supermarket.pojo.User" resultType="int">
+		select count(1) from smbms_user
+		<include refid="conditionSql"></include>
+	</select>
+	
+	<update id="update" parameterType="org.supermarket.pojo.User">
+		update smbms_user 
+			<set>
+				<if test="userCode != null">userCode = #{userCode},</if>
+				<if test="userName != null">userName = #{userName},</if>
+			</set>
+			where id = #{id}
+	</update>
+	
+	<delete id="batchDelete" parameterType="java.lang.reflect.Array">
+		delete from smbms_user
+			where id in
+			<foreach collection="array" item="item" open="(" close=")" separator=",">
+				#{item}
+			</foreach>
+	</delete>
+	<delete id="deleteById" parameterType="int">
+		delete from smbms_user where id = #{id}
+	</delete>
+	
+	<select id="getByUsername" parameterType="string" resultType="org.supermarket.pojo.User">
+		select * from smbms_user where usercode = #{username}
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
